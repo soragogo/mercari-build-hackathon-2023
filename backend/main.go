@@ -13,8 +13,8 @@ import (
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/mercari-build/mecari-build-hackathon-2023/backend/db"
-	"github.com/mercari-build/mecari-build-hackathon-2023/backend/handler"
+	"github.com/soragogo/mecari-build-hackathon-2023/backend/db"
+	"github.com/soragogo/mecari-build-hackathon-2023/backend/handler"
 )
 
 const (
