@@ -13,7 +13,7 @@ interface Prop {
 
 export const ItemList: React.FC<Prop> = (props) => {
   return (
-    <div>
+    <div className="ItemBundle">
       {props.items &&
         props.items.map((item) => {
           return <Item item={item} />;

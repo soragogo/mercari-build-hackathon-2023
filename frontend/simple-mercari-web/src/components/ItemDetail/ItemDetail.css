@@ -1,0 +1,38 @@
+.ItemDetail {
+    /* ItemDetail全体のスタイル */
+}
+
+.ItemDetail .item-image {
+    /* 画像のスタイル */
+}
+
+.ItemDetail span.price {
+    /* 価格のスタイル */
+    color: red;
+    font-size: 40px;
+
+}
+
+.ItemDetail span.item-name {
+    /* Item Nameのスタイル */
+}
+
+.ItemDetail span.user-id {
+    /* UserIDのスタイル */
+}
+
+.ItemDetail span.category {
+    /* Categoryのスタイル */
+}
+
+.ItemDetail span.description {
+    /* Descriptionのスタイル */
+}
+
+.ItemDetail button#MerDisableButton {
+    /* SoldOutボタンのスタイル */
+}
+
+.ItemDetail button#MerButton {
+    /* Purchaseボタンのスタイル */
+}

@@ -4,6 +4,7 @@ import { useCookies } from "react-cookie";
 import { MerComponent } from "../MerComponent";
 import { toast } from "react-toastify";
 import { fetcher, fetcherBlob } from "../../helper";
+import "./ItemDetail.css"
 
 const ItemStatus = {
   ItemStatusInitial: 0,
@@ -92,8 +93,9 @@ export const ItemDetail = () => {
     <div className="ItemDetail">
       <MerComponent condition={() => item !== undefined}>
         {item && itemImage && (
-          <div>
+          <div className="ItemDetails">
             <img
+              className="item-image"
               height={480}
               width={480}
               src={URL.createObjectURL(itemImage)}
@@ -101,18 +103,20 @@ export const ItemDetail = () => {
               onClick={() => navigate(`/item/${item.id}`)}
             />
             <p>
-              <span><strong>￥{item.price}</strong></span>
+              <span className="price">
+                <strong>￥{item.price}</strong>
+              </span>
             </p>
-            <span>Item Name: {item.name}</span>
+            <span className="item-name">Item Name: {item.name}</span>
             <br />
-            <span>UserID: {item.user_id}</span>
+            <span className="user-id">UserID: {item.user_id}</span>
             <br />
-            <span>Category: {item.category_name}</span>
+            <span className="category">Category: {item.category_name}</span>
             <br />
-            <span>Description: {item.description}</span>
+            <span className="description">Description: {item.description}</span>
             <br />
 
-            {item.status == ItemStatus.ItemStatusSoldOut ? (
+            {item.status === ItemStatus.ItemStatusSoldOut ? (
               <button disabled={true} onClick={onSubmit} id="MerDisableButton">
                 SoldOut
               </button>
@@ -126,4 +130,6 @@ export const ItemDetail = () => {
       </MerComponent>
     </div>
   );
+
+
 };

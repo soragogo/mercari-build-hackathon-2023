@@ -36,23 +36,24 @@ export const Item: React.FC<{ item: Item }> = ({ item }) => {
   }, [item]);
 
   return (
-    <div className='ItemsIntheGallary'>
-      <h3>{item.name}</h3>
+    <div className="ItemsIntheGallary">
+      <h3 className="item-name">{item.name}</h3>
       <img
         src={itemImage}
         alt={item.name}
-        height={280}
-        width={280}
+        height={300}
+        width={300}
         onClick={() => navigate(`/item/${item.id}`)}
       />
       <p>
-        <span>Category: {item.category_name}</span>
+        <span className="category">Category: {item.category_name}</span>
         <br />
-        <span>
+        <span className="price">
           <strong>￥{item.price}</strong>
         </span>
         <br />
       </p>
     </div>
   );
+
 };

@@ -1,0 +1,69 @@
+.ItemBundle {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.ItemBundle .item {
+    flex-basis: calc(33.33% - 2px);
+    /* 他のスタイルプロパティ */
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+
+.ItemsIntheGallary {
+    /* .ItemsIntheGallary全体のスタイル */
+}
+
+.ItemsIntheGallary h3 {
+    /* item.nameのスタイル */
+}
+
+.ItemsIntheGallary img {
+    /* 画像のスタイル */
+}
+
+.ItemsIntheGallary span.category {
+    /* Categoryのスタイル */
+    color: darkgrey;
+}
+
+.ItemsIntheGallary span.price {
+    /* 価格のスタイル */
+}
+
+.ItemDetail {
+    /* ItemDetail全体のスタイル */
+}
+
+.ItemDetail .ItemDetails {
+    /* ItemDetailsのスタイル */
+}
+
+.ItemDetail .ItemDetails img {
+    /* 画像のスタイル */
+}
+
+.ItemDetail .ItemDetails p {
+    /* p要素のスタイル */
+}
+
+.ItemDetail .ItemDetails p span {
+    /* span要素のスタイル */
+}
+
+.ItemDetail .ItemDetails span {
+    /* span要素のスタイル */
+}
+
+.ItemDetail .ItemDetails button {
+    /* ボタン要素のスタイル */
+}
+
+.ItemDetail .ItemDetails button#MerDisableButton {
+    /* SoldOutボタンのスタイル */
+}
+
+.ItemDetail .ItemDetails button#MerButton {
+    /* Purchaseボタンのスタイル */
+}
