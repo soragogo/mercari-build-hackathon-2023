@@ -1,4 +1,4 @@
-import { FaHome, FaCamera, FaUser } from "react-icons/fa";
+import { FaHome, FaCamera, FaUser, FaHeart, FaStar, FaCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import "./Footer.css";

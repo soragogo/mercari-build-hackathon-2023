@@ -101,16 +101,17 @@ export const ItemDetail = () => {
               onClick={() => navigate(`/item/${item.id}`)}
             />
             <p>
-              <span>Item Name: {item.name}</span>
-              <br />
-              <span>Price: {item.price}</span>
-              <br />
-              <span>UserID: {item.user_id}</span>
-              <br />
-              <span>Category: {item.category_name}</span>
-              <br />
-              <span>Description: {item.description}</span>
+              <span><strong>￥{item.price}</strong></span>
             </p>
+            <span>Item Name: {item.name}</span>
+            <br />
+            <span>UserID: {item.user_id}</span>
+            <br />
+            <span>Category: {item.category_name}</span>
+            <br />
+            <span>Description: {item.description}</span>
+            <br />
+
             {item.status == ItemStatus.ItemStatusSoldOut ? (
               <button disabled={true} onClick={onSubmit} id="MerDisableButton">
                 SoldOut

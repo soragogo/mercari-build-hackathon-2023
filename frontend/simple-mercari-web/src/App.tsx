@@ -12,7 +12,7 @@ import 'react-toastify/dist/ReactToastify.css';
 export const App: React.VFC = () => {
   return (
     <>
-      <ToastContainer position="bottom-center"/>
+      <ToastContainer position="bottom-center" />
 
       <BrowserRouter>
         <div className="MerComponent">
