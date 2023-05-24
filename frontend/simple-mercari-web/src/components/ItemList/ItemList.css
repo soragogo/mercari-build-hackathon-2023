@@ -1,0 +1,12 @@
+.ItemBundle {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.ItemBundle .item {
+    flex-basis: calc(33.33% - 10px);
+    /* 他のスタイルプロパティ */
+    margin-bottom: 5px;
+    box-sizing: border-box;
+}

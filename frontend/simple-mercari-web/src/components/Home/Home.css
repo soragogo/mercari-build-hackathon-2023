@@ -13,10 +13,12 @@
 
 .ItemsIntheGallary {
     /* .ItemsIntheGallary全体のスタイル */
+    max-width: 100px;
 }
 
 .ItemsIntheGallary h3 {
     /* item.nameのスタイル */
+    font-size: 3px;
 }
 
 .ItemsIntheGallary img {
@@ -25,7 +27,9 @@
 
 .ItemsIntheGallary span.category {
     /* Categoryのスタイル */
-    color: darkgrey;
+    /* color: darkgrey; */
+    font-size: 1px;
+    display: none;
 }
 
 .ItemsIntheGallary span.price {

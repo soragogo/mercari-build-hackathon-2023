@@ -41,16 +41,15 @@ export const Item: React.FC<{ item: Item }> = ({ item }) => {
       <img
         src={itemImage}
         alt={item.name}
-        height={300}
-        width={300}
+        height={100}
+        width={100}
         onClick={() => navigate(`/item/${item.id}`)}
       />
       <p>
-        <span className="category">Category: {item.category_name}</span>
-        <br />
         <span className="price">
           <strong>￥{item.price}</strong>
         </span>
+        <span className="category">Category: {item.category_name}</span>
         <br />
       </p>
     </div>
