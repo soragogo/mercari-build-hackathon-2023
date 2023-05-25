@@ -67,6 +67,7 @@ export const ItemDetail = () => {
   };
 
   const onSubmit = (_: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+
     fetcher<Item[]>(`/purchase/${params.id}`, {
       method: "POST",
       headers: {
