@@ -1,16 +1,18 @@
 .ItemsIntheGallary {
+    position: relative;
     flex-basis: calc(33.3%);
     /* 50%の幅に設定 */
     /* 他のスタイルプロパティ */
-    position: relative;
+
 }
 
 .ItemsIntheGallary .item-image_ {
+    position: relative;
     max-width: 98%;
     /* 画像の最大幅を100%に設定 */
     height: auto;
     /* 高さを自動調整 */
-    position: relative;
+
     border-radius: 8%;
     /* 任意の角丸の大きさ */
 }
@@ -35,13 +37,13 @@
 
 .ItemsIntheGallary .price {
     position: absolute;
-    bottom: 8%;
+    bottom: 10%;
     left: 0%;
     color: white;
     font-size: 100%;
     background-color: rgba(59, 59, 59, 0.6);
     /* 透明度を調整 */
-    padding: 5%;
+    padding: 3%;
     font-weight: bold;
     border-radius: 8%;
 }
