@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import { fetcherBlob } from "../../helper";
+import "./Item.css";
 
 interface Item {
   id: number;
@@ -36,21 +37,27 @@ export const Item: React.FC<{ item: Item }> = ({ item }) => {
   }, [item]);
 
   return (
-    <div>
-      <h3>{item.name}</h3>
+    <div className="ItemsIntheGallary">
+      {/* <h3 className="item-name">{item.name}</h3> */}
       <img
+        className="item-image_"
         src={itemImage}
         alt={item.name}
-        height={480}
-        width={480}
+        // height={300}
+        // width={300}
         onClick={() => navigate(`/item/${item.id}`)}
       />
       <p>
-        <span>Category: {item.category_name}</span>
-        <br />
-        <span>Price: {item.price}</span>
-        <br />
+        <span className="price">
+          <strong>
+            <span className="currency-mark">￥</span>
+            {item.price.toLocaleString()}
+          </strong>
+        </span>
+        {/* <span className="category">Category: {item.category_name}</span> */}
+        {/* <br /> */}
       </p>
     </div>
   );
+
 };

@@ -4,6 +4,7 @@ import { useCookies } from "react-cookie";
 import { MerComponent } from "../MerComponent";
 import { toast } from "react-toastify";
 import { fetcher, fetcherBlob } from "../../helper";
+import "./ItemDetail.css"
 
 const ItemStatus = {
   ItemStatusInitial: 0,
@@ -65,7 +66,10 @@ export const ItemDetail = () => {
       });
   };
 
+
+
   const onSubmit = (_: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+
     fetcher<Item[]>(`/purchase/${params.id}`, {
       method: "POST",
       headers: {
@@ -92,37 +96,75 @@ export const ItemDetail = () => {
     <div className="ItemDetail">
       <MerComponent condition={() => item !== undefined}>
         {item && itemImage && (
-          <div>
+          <div className="ItemDetails">
             <img
-              height={480}
-              width={480}
+              className="item-image"
               src={URL.createObjectURL(itemImage)}
               alt="item"
               onClick={() => navigate(`/item/${item.id}`)}
             />
             <p>
-              <span>Item Name: {item.name}</span>
-              <br />
-              <span>Price: {item.price}</span>
-              <br />
-              <span>UserID: {item.user_id}</span>
-              <br />
-              <span>Category: {item.category_name}</span>
-              <br />
-              <span>Description: {item.description}</span>
             </p>
-            {item.status == ItemStatus.ItemStatusSoldOut ? (
-              <button disabled={true} onClick={onSubmit} id="MerDisableButton">
-                SoldOut
-              </button>
+            <div className="user-info-text">
+              <span className="item-name">{item.name}</span>
+              <br />
+              <div className="description-container">
+                <span className="detail-title">
+                  <strong>Descripetion</strong>
+                </span>
+              </div>
+              <span className="description">{item.description}</span>
+              <br />
+              <div className="description-container">
+                <span>
+                  <strong className="detail-title">Information</strong>
+                </span>
+              </div>
+              <table className="user-info-table">
+                <tbody>
+                  <tr>
+                    <th>User ID</th>
+                    <td>{item.user_id}</td>
+                  </tr>
+                  <tr>
+                    <th>Category</th>
+                    <td>{item.category_name}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+
+            {item.status === ItemStatus.ItemStatusSoldOut ? (
+              <div className="PriceandPurchase">
+                <span className="price">
+                  <strong>
+                    <span className="currency-mark">￥</span>
+                    {item.price.toLocaleString()}
+                  </strong>
+                </span>
+                <button disabled={true} onClick={onSubmit} id="SoldOutMerButton">
+                  <strong>SoldOut</strong>
+                </button>
+              </div>
             ) : (
-              <button onClick={onSubmit} id="MerButton">
-                Purchase
-              </button>
+              <div className="PriceandPurchase">
+                <span className="price">
+                  <strong>
+                    <span className="currency-mark">￥</span>
+                    {item.price.toLocaleString()}
+                  </strong>
+                </span>
+                <button onClick={onSubmit} id="PurchaseMerButton">
+                  <strong>Purchase</strong>
+                </button>
+              </div>
             )}
           </div>
         )}
       </MerComponent>
     </div>
   );
+
+
 };

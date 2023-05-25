@@ -1,0 +1,178 @@
+.ItemDetail .item {
+    /* ItemDetail全体のスタイル */
+}
+
+.ItemDetail .item-image {
+    /* 画像のスタイル */
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+
+}
+
+.user-info-text {
+    margin-bottom: 30px;
+}
+
+
+.ItemDetail span.item-name {
+    /* Item Nameのスタイル */
+    font-size: 50px;
+    font-weight: bold;
+
+}
+
+.ItemDetail span.user-id {
+    /* UserIDのスタイル */
+
+}
+
+.ItemDetail span.category {
+    /* Categoryのスタイル */
+
+}
+
+.ItemDetail .description-title {
+    font-weight: bold;
+
+
+}
+
+
+.ItemDetail .description-container {
+    background-color: white;
+    /* padding: 10px; */
+    margin-bottom: 10px;
+    margin-top: 30px;
+    text-align: left;
+    color: rgb(110, 110, 110);
+}
+
+.user-info-table {
+    width: 100%;
+    margin-top: 20px;
+    color: rgb(47, 47, 47);
+    /* background-color: white; */
+    /* border: 1px solid white; */
+    border-top: 1px solid rgb(206, 206, 206);
+    border-bottom: 1px solid rgb(206, 206, 206);
+
+}
+
+.user-info-table th,
+.user-info-table td {
+    border: 1px solid white;
+    text-align: left;
+
+}
+
+
+.ItemDetail .user-info-table th {
+    background-color: white;
+    width: 50%;
+}
+
+.detail-title {
+    font-size: 100%;
+    text-align: left;
+    /* 任意の大きさに調整 */
+}
+
+
+.ItemDetail span.description {
+    /* Descriptionのスタイル */
+    font-size: 90%;
+}
+
+.ItemDetail button#MerDisableButton {
+    /* SoldOutボタンのスタイル */
+}
+
+.ItemDetail button#MerButton {
+    /* Purchaseボタンのスタイル */
+}
+
+#PurchaseMerButton {
+    position: absolute;
+    bottom: 50%;
+    transform: translateY(50%);
+    right: 10%;
+    /* 他のスタイルプロパティ */
+    background-color: #da3e50;
+    color: white;
+    font: inherit;
+    transition-timing-function: ease-in-out;
+    transition-duration: 0.1s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border-color: transparent;
+    width: 30%;
+    height: 50%;
+    overflow: hidden;
+    line-height: 10%;
+    white-space: nowrap;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition-property: background-color, color, fill;
+    /* 既存のスタイルプロパティを削除 */
+}
+
+#SoldOutMerButton {
+    position: absolute;
+    bottom: 50%;
+    transform: translateY(50%);
+    right: 10%;
+    /* 他のスタイルプロパティ */
+    background-color: #888888;
+    color: white;
+    font: inherit;
+    transition-timing-function: ease-in-out;
+    transition-duration: 0.1s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border-color: transparent;
+    width: 30%;
+    height: 50%;
+    overflow: hidden;
+    line-height: 10%;
+    white-space: nowrap;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition-property: background-color, color, fill;
+    /* 既存のスタイルプロパティを削除 */
+}
+
+.PriceandPurchase {
+    z-index: 999;
+    position: fixed;
+    bottom: 8%;
+    left: 0;
+    width: 100%;
+    margin-bottom: 0;
+    background-color: #ffffff;
+    text-align: right;
+    padding: 2%;
+    box-shadow: 0px 0px 5px 1px rgba(0, 0, 0, 0.1);
+}
+
+
+.PriceandPurchase .price {
+    /* 価格のスタイル */
+    color: red;
+    font-size: 40px;
+    margin-right: 80%;
+    /* 価格とボタンの間の余白を設定 */
+}
+
+.PriceandPurchase .price .currency-mark {
+    font-size: 0.5em;
+}

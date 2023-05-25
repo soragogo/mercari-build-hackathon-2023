@@ -1,5 +1,6 @@
 import React from "react";
 import { Item } from "../Item";
+import "./ItemList.css"
 interface Item {
   id: number;
   name: string;
@@ -13,7 +14,7 @@ interface Prop {
 
 export const ItemList: React.FC<Prop> = (props) => {
   return (
-    <div>
+    <div className="ItemBundle">
       {props.items &&
         props.items.map((item) => {
           return <Item item={item} />;

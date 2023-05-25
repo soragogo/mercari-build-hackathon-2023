@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { fetcher } from "../../helper";
 import "react-toastify/dist/ReactToastify.css";
+import "./Home.css"
 
 interface Item {
   id: number;
@@ -54,7 +55,7 @@ export const Home = () => {
 
   const itemListPage = (
     <MerComponent>
-      <div>
+      <div >
         <span>
           <p>Logined User ID: {cookies.userID}</p>
         </span>
