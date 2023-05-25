@@ -24,6 +24,12 @@ const (
 
 func main() {
 	os.Exit(run(context.Background()))
+	// Initialize endpoint before starting the server
+if err := h.Initialize(e.NewContext(nil, nil)); err != nil {
+    fmt.Fprintf(os.Stderr, "failed to initialize: %s\n", err)
+    return exitError
+}
+
 }
 
 func run(ctx context.Context) int {
@@ -76,7 +82,7 @@ func run(ctx context.Context) int {
 	}
 
 	// Routes
-	e.POST("/initialize", h.Initialize)
+	//e.POST("/initialize", h.Initialize)
 	e.GET("/log", h.AccessLog)
 
 	e.GET("/items", h.GetOnSaleItems)
