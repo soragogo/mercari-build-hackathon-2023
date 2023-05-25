@@ -1,5 +1,6 @@
 import React from "react";
 import { Item } from "../Item";
+import "./ItemList.css"
 interface Item {
   id: number;
   name: string;

@@ -1,0 +1,47 @@
+.ItemsIntheGallary {
+    flex-basis: calc(33.3%);
+    /* 50%の幅に設定 */
+    /* 他のスタイルプロパティ */
+    position: relative;
+}
+
+.ItemsIntheGallary .item-image_ {
+    max-width: 98%;
+    /* 画像の最大幅を100%に設定 */
+    height: auto;
+    /* 高さを自動調整 */
+    position: relative;
+    border-radius: 8%;
+    /* 任意の角丸の大きさ */
+}
+
+.ItemsIntheGallary h3 {
+    /* item.nameのスタイル */
+    font-size: 9%;
+}
+
+
+.ItemsIntheGallary span.category {
+    /* Categoryのスタイル */
+    /* color: darkgrey; */
+    font-size: 1px;
+    display: none;
+}
+
+.ItemsIntheGallary .currency-mark {
+    font-size: 0.7em;
+}
+
+
+.ItemsIntheGallary .price {
+    position: absolute;
+    bottom: 8%;
+    left: 0%;
+    color: white;
+    font-size: 100%;
+    background-color: rgba(59, 59, 59, 0.6);
+    /* 透明度を調整 */
+    padding: 5%;
+    font-weight: bold;
+    border-radius: 8%;
+}

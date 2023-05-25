@@ -96,34 +96,66 @@ export const ItemDetail = () => {
           <div className="ItemDetails">
             <img
               className="item-image"
-              height={480}
-              width={480}
               src={URL.createObjectURL(itemImage)}
               alt="item"
               onClick={() => navigate(`/item/${item.id}`)}
             />
             <p>
-              <span className="price">
-                <strong>￥{item.price}</strong>
-              </span>
             </p>
-            <span className="item-name">Item Name: {item.name}</span>
-            <br />
-            <span className="user-id">UserID: {item.user_id}</span>
-            <br />
-            <span className="category">Category: {item.category_name}</span>
-            <br />
-            <span className="description">Description: {item.description}</span>
-            <br />
+            <div className="user-info-text">
+              <span className="item-name">{item.name}</span>
+              <br />
+              <div className="description-container">
+                <span className="detail-title">
+                  <strong>Descripetion</strong>
+                </span>
+              </div>
+              <span className="description">{item.description}</span>
+              <br />
+              <div className="description-container">
+                <span>
+                  <strong className="detail-title">Information</strong>
+                </span>
+              </div>
+              <table className="user-info-table">
+                <tbody>
+                  <tr>
+                    <th>User ID</th>
+                    <td>{item.user_id}</td>
+                  </tr>
+                  <tr>
+                    <th>Category</th>
+                    <td>{item.category_name}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
 
             {item.status === ItemStatus.ItemStatusSoldOut ? (
-              <button disabled={true} onClick={onSubmit} id="MerDisableButton">
-                SoldOut
-              </button>
+              <div className="PriceandPurchase">
+                <span className="price">
+                  <strong>
+                    <span className="currency-mark">￥</span>
+                    {item.price.toLocaleString()}
+                  </strong>
+                </span>
+                <button disabled={true} onClick={onSubmit} id="SoldOutMerButton">
+                  <strong>SoldOut</strong>
+                </button>
+              </div>
             ) : (
-              <button onClick={onSubmit} id="MerButton">
-                Purchase
-              </button>
+              <div className="PriceandPurchase">
+                <span className="price">
+                  <strong>
+                    <span className="currency-mark">￥</span>
+                    {item.price.toLocaleString()}
+                  </strong>
+                </span>
+                <button onClick={onSubmit} id="PurchaseMerButton">
+                  <strong>Purchase</strong>
+                </button>
+              </div>
             )}
           </div>
         )}
