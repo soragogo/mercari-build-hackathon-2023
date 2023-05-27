@@ -5,15 +5,16 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/labstack/echo/v4"
 	"github.com/soragogo/mecari-build-hackathon-2023/backend/db"
 	"github.com/soragogo/mecari-build-hackathon-2023/backend/domain"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -42,28 +43,17 @@ type registerResponse struct {
 }
 
 type getUserItemsResponse struct {
-	ID           int32  `json:"id"`
+	ID           int64  `json:"id"`
 	Name         string `json:"name"`
 	Price        int64  `json:"price"`
 	CategoryName string `json:"category_name"`
 }
 
 type getOnSaleItemsResponse struct {
-	ID           int32  `json:"id"`
+	ID           int64  `json:"id"`
 	Name         string `json:"name"`
 	Price        int64  `json:"price"`
 	CategoryName string `json:"category_name"`
-}
-
-type getItemResponse struct {
-	ID           int32             `json:"id"`
-	Name         string            `json:"name"`
-	CategoryID   int64             `json:"category_id"`
-	CategoryName string            `json:"category_name"`
-	UserID       int64             `json:"user_id"`
-	Price        int64             `json:"price"`
-	Description  string            `json:"description"`
-	Status       domain.ItemStatus `json:"status"`
 }
 
 type getCategoriesResponse struct {
@@ -72,7 +62,7 @@ type getCategoriesResponse struct {
 }
 
 type sellRequest struct {
-	ItemID int32 `json:"item_id"`
+	ItemID int64 `json:"item_id"`
 }
 
 type addItemRequest struct {
@@ -86,11 +76,11 @@ type addItemResponse struct {
 	ID int64 `json:"id"`
 }
 
-type addBalanceRequest struct {
+type AddBalanceRequest struct {
 	Balance int64 `json:"balance"`
 }
 
-type getBalanceResponse struct {
+type GetBalanceResponse struct {
 	Balance int64 `json:"balance"`
 }
 
@@ -223,7 +213,11 @@ func (h *Handler) AddItem(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	defer src.Close()
+	defer func() {
+		if err := src.Close(); err != nil {
+			log.Printf("failed src.Close: %s", err.Error())
+		}
+	}()
 
 	var dest []byte
 	blob := bytes.NewBuffer(dest)
@@ -267,7 +261,7 @@ func (h *Handler) Sell(c echo.Context) error {
 
 	item, err := h.ItemRepo.GetItem(ctx, req.ItemID)
 	// TODO: not found handling
-	// http.StatusNotFound(404)
+	// http.StatusPreconditionFailed(412)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -312,12 +306,12 @@ func (h *Handler) GetOnSaleItems(c echo.Context) error {
 func (h *Handler) GetItem(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	itemID, err := strconv.Atoi(c.Param("itemID"))
+	itemID, err := strconv.ParseInt(c.Param("itemID"), 10, 64)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	item, err := h.ItemRepo.GetItem(ctx, int32(itemID))
+	item, err := h.ItemRepo.GetItem(ctx, itemID)
 	// TODO: not found handling
 	// http.StatusNotFound(404)
 	if err != nil {
@@ -328,16 +322,9 @@ func (h *Handler) GetItem(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	return c.JSON(http.StatusOK, getItemResponse{
-		ID:           item.ID,
-		Name:         item.Name,
-		CategoryID:   item.CategoryID,
-		CategoryName: category.Name,
-		UserID:       item.UserID,
-		Price:        item.Price,
-		Description:  item.Description,
-		Status:       item.Status,
-	})
+	res := item.ConvertToGetItemResponse()
+	res.CategoryName = category.Name
+	return c.JSON(http.StatusOK, res)
 }
 
 func (h *Handler) GetUserItems(c echo.Context) error {
@@ -357,15 +344,16 @@ func (h *Handler) GetUserItems(c echo.Context) error {
 
 	var res []getUserItemsResponse
 	for _, item := range items {
-		cats, err := h.ItemRepo.GetCategories(ctx)
+		cat, err := h.ItemRepo.GetCategory(ctx, item.CategoryID)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, err)
 		}
-		for _, cat := range cats {
-			if cat.ID == item.CategoryID {
-				res = append(res, getUserItemsResponse{ID: item.ID, Name: item.Name, Price: item.Price, CategoryName: cat.Name})
-			}
-		}
+		res = append(res, getUserItemsResponse{
+			ID:           item.ID,
+			Name:         item.Name,
+			Price:        item.Price,
+			CategoryName: cat.Name,
+		})
 	}
 
 	return c.JSON(http.StatusOK, res)
@@ -392,14 +380,12 @@ func (h *Handler) GetCategories(c echo.Context) error {
 func (h *Handler) GetImage(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	// TODO: overflow
-	itemID, err := strconv.Atoi(c.Param("itemID"))
+	itemID, err := strconv.ParseInt(c.Param("itemID"), 10, 64)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "invalid itemID type")
 	}
 
-	// オーバーフローしていると。ここのint32(itemID)がバグって正常に処理ができないはず
-	data, err := h.ItemRepo.GetItemImage(ctx, int32(itemID))
+	data, err := h.ItemRepo.GetItemImage(ctx, itemID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -407,12 +393,47 @@ func (h *Handler) GetImage(c echo.Context) error {
 	return c.Blob(http.StatusOK, "image/jpeg", data)
 }
 
+func (h *Handler) SearchItems(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	// get search word
+	searchWord := c.Request().URL.Query().Get("name")
+	if searchWord == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "please specified search word")
+	}
+
+	items, err := h.ItemRepo.SearchItemsByWord(ctx, searchWord)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	categories, err := h.ItemRepo.GetCategories(ctx)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+	res := make([]domain.GetItemResponse, len(items))
+	for i, item := range items {
+		res[i] = item.ConvertToGetItemResponse()
+		// TODO: refactor here...
+		if !(0 <= res[i].CategoryID && res[i].CategoryID <= int64(len(categories))) {
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("invalid category ID: %d", res[i].CategoryID))
+		}
+		res[i].CategoryName = categories[res[i].CategoryID-1].Name
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
 func (h *Handler) AddBalance(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	req := new(addBalanceRequest)
+	// validation
+	req := new(AddBalanceRequest)
 	if err := c.Bind(req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+	if req.Balance <= 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("negative added balance is invalid: %d", req.Balance))
 	}
 
 	userID, err := getUserID(c)
@@ -421,9 +442,10 @@ func (h *Handler) AddBalance(c echo.Context) error {
 	}
 
 	user, err := h.UserRepo.GetUser(ctx, userID)
-	// TODO: not found handling
-	// http.StatusNotFound(404)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusPreconditionFailed, err.Error())
+		}
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
@@ -443,13 +465,14 @@ func (h *Handler) GetBalance(c echo.Context) error {
 	}
 
 	user, err := h.UserRepo.GetUser(ctx, userID)
-	// TODO: not found handling
-	// http.StatusNotFound(404)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusPreconditionFailed, err.Error())
+		}
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	return c.JSON(http.StatusOK, getBalanceResponse{Balance: user.Balance})
+	return c.JSON(http.StatusOK, GetBalanceResponse{Balance: user.Balance})
 }
 
 func (h *Handler) Purchase(c echo.Context) error {
@@ -460,50 +483,61 @@ func (h *Handler) Purchase(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, err)
 	}
 
-	// TODO: overflow
-	itemID, err := strconv.Atoi(c.Param("itemID"))
+	itemID, err := strconv.ParseInt(c.Param("itemID"), 10, 64)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	// TODO: update only when item status is on sale
-	// http.StatusPreconditionFailed(412)
-
-	// オーバーフローしていると。ここのint32(itemID)がバグって正常に処理ができないはず
-	if err := h.ItemRepo.UpdateItemStatus(ctx, int32(itemID), domain.ItemStatusSoldOut); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-
-	user, err := h.UserRepo.GetUser(ctx, userID)
-	// TODO: not found handling
-	// http.StatusNotFound(404)
+	// TODO: use transaction
+	buyer, err := h.UserRepo.GetUser(ctx, userID)
 	if err != nil {
+		// not found handling
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusPreconditionFailed, err)
+		}
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	item, err := h.ItemRepo.GetItem(ctx, int32(itemID))
-	// TODO: not found handling
-	// http.StatusNotFound(404)
+	// TODO: this request can be reduced by updating UpdateItemStatus
+	// e.g.) UpdateItemStatusIfOnSale, UpdateItemStatus(context, itemID, beforeCondition, afterCondition)
+	item, err := h.ItemRepo.GetItem(ctx, itemID)
 	if err != nil {
+		// not found handling
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusPreconditionFailed, err)
+		}
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-
-	// TODO: if it is fail here, item status is still sold
-	// TODO: balance consistency
-	// TODO: not to buy own items. 自身の商品を買おうとしていたら、http.StatusPreconditionFailed(412)
-	if err := h.UserRepo.UpdateBalance(ctx, userID, user.Balance-item.Price); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	// update only when item status is on sale
+	if item.Status != domain.ItemStatusOnSale {
+		return echo.NewHTTPError(http.StatusPreconditionFailed, fmt.Errorf("item is not on sale"))
+	}
+	// not to buy own items. 自身の商品を買おうとしていたら、http.StatusPreconditionFailed(412)
+	if buyer.ID == item.UserID {
+		return echo.NewHTTPError(http.StatusPreconditionFailed, fmt.Errorf("failed to buy because of user owned item"))
 	}
 
 	sellerID := item.UserID
-
 	seller, err := h.UserRepo.GetUser(ctx, sellerID)
-	// TODO: not found handling
-	// http.StatusNotFound(404)
 	if err != nil {
+		// not found handling
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusPreconditionFailed, err)
+		}
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
+	// if it is fail here, item status is still sold
+	// balance consistency
+	if buyer.Balance-item.Price < 0 {
+		return echo.NewHTTPError(http.StatusPreconditionFailed, fmt.Errorf("failed to buy because of lack of balances: balance: %d, price: %d", buyer.Balance, item.Price))
+	}
+	if err := h.ItemRepo.UpdateItemStatus(ctx, itemID, domain.ItemStatusSoldOut); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+	if err := h.UserRepo.UpdateBalance(ctx, userID, buyer.Balance-item.Price); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
 	if err := h.UserRepo.UpdateBalance(ctx, sellerID, seller.Balance+item.Price); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -513,11 +547,15 @@ func (h *Handler) Purchase(c echo.Context) error {
 
 func getUserID(c echo.Context) (int64, error) {
 	user := c.Get("user").(*jwt.Token)
+	// use same error for security reason
 	if user == nil {
 		return -1, fmt.Errorf("invalid token")
 	}
 	claims := user.Claims.(*JwtCustomClaims)
 	if claims == nil {
+		return -1, fmt.Errorf("invalid token")
+	}
+	if claims.UserID < 0 {
 		return -1, fmt.Errorf("invalid token")
 	}
 
