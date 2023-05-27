@@ -96,7 +96,7 @@ export const ItemDetail = () => {
     <div className="ItemDetail">
       <MerComponent condition={() => item !== undefined}>
         {item && itemImage && (
-          <div className="ItemDetails">
+          <div className="item-details">
             <img
               className="item-image"
               src={URL.createObjectURL(itemImage)}
@@ -132,6 +132,7 @@ export const ItemDetail = () => {
                   </tr>
                 </tbody>
               </table>
+              <div className="spacer"></div>
             </div>
 
 
@@ -161,8 +162,9 @@ export const ItemDetail = () => {
               </div>
             )}
           </div>
-        )}
-      </MerComponent>
+        )
+        }
+      </MerComponent >
     </div>
   );
 

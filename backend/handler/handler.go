@@ -11,8 +11,10 @@ import (
 	"time"
 	"strings"
 	"path/filepath"
+	"image"
+	"image/jpeg"
 
-	
+	"github.com/nfnt/resize"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/soragogo/mecari-build-hackathon-2023/backend/db"
@@ -110,6 +112,17 @@ type loginResponse struct {
 	Name  string `json:"name"`
 	Token string `json:"token"`
 }
+
+type SearchResult struct {
+	ID          int32             `json:"id"`
+	Name        string            `json:"name"`
+	UserID      int64             `json:"user_id"`
+	Price       int64             `json:"price"`
+	Description string            `json:"description"`
+	Status      domain.ItemStatus `json:"status"`
+}
+
+
 
 type Handler struct {
 	DB       *sql.DB
@@ -244,6 +257,8 @@ func (h *Handler) AddItem(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid file format. Only JPG, JPEG, PNG, and GIF are allowed.")
 	}
 
+	
+
 	src, err := file.Open()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
@@ -266,13 +281,32 @@ func (h *Handler) AddItem(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
+	const (
+		maxWidth  = 800
+		maxHeight = 800
+	)
+
+	// 画像のリサイズを行います
+	img, _, err := image.Decode(blob)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	resizedImage := resize.Resize(maxWidth, maxHeight, img, resize.Lanczos3)
+
+	// リサイズされた画像のバイトデータを取得します
+	resizedBytes := new(bytes.Buffer)
+	if err := jpeg.Encode(resizedBytes, resizedImage, nil); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
 	item, err := h.ItemRepo.AddItem(c.Request().Context(), domain.Item{
 		Name:        req.Name,
 		CategoryID:  req.CategoryID,
 		UserID:      userID,
 		Price:       req.Price,
 		Description: req.Description,
-		Image:       blob.Bytes(),
+		Image:       resizedBytes.Bytes(),
 		Status:      domain.ItemStatusInitial,
 	})
 	if err != nil {
@@ -362,6 +396,43 @@ func (h *Handler) GetItem(c echo.Context) error {
 		Price:        item.Price,
 		Description:  item.Description,
 		Status:       item.Status,
+	})
+}
+
+func (h *Handler) PutItem(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	itemID, err := strconv.Atoi(c.Param("itemID"))
+	fmt.Println(ctx, itemID, err)
+	// if err != nil {
+	// 	return echo.NewHTTPError(http.StatusInternalServerError, err)
+	// }
+
+	// item, err := h.ItemRepo.GetItem(ctx, int32(itemID))
+	// // TODO: not found handling
+	// // http.StatusNotFound(404)
+	// if err != nil {
+	// 	return echo.NewHTTPError(http.StatusInternalServerError, err)
+	// }
+
+	// category, err := h.ItemRepo.GetCategory(ctx, item.CategoryID)
+	// if err != nil {
+	// 	return echo.NewHTTPError(http.StatusInternalServerError, err)
+	// // }
+	// return c.JSON(http.StatusOK, getItemResponse{
+	// 	ID:           item.ID,
+	// 	Name:         item.Name,
+	// 	CategoryID:   item.CategoryID,
+	// 	CategoryName: category.Name,
+	// 	UserID:       item.UserID,
+	// 	Price:        item.Price,
+	// 	Description:  item.Description,
+	// 	Status:       item.Status,
+	// })
+	
+
+	return c.JSON(http.StatusOK, getItemResponse{
+		ID: 123,
 	})
 }
 
@@ -548,6 +619,40 @@ func getUserID(c echo.Context) (int64, error) {
 
 	return claims.UserID, nil
 }
+
+func (h *Handler) SearchItems(c echo.Context) error {
+	itemName := c.QueryParam("name")
+	println("hi")
+	// 検索処理の実装
+	items, err := h.ItemRepo.SearchItems(c.Request().Context(), itemName)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		
+	}
+
+
+	// レスポンスデータの作成
+	var searchResults []SearchResult
+	for _, item := range items {
+		searchResult := SearchResult{
+			ID:           item.ID,
+			Name:         item.Name,
+			UserID:       item.UserID,
+			Price:        item.Price,
+			Description:  item.Description,
+			Status:       item.Status,
+		}
+		searchResults = append(searchResults, searchResult)
+	}
+
+	// レスポンスの返却
+	return c.JSON(http.StatusOK, searchResults)
+}
+
+
+
+
+
 
 func getEnv(key string, defaultValue string) string {
 	value := os.Getenv(key)
