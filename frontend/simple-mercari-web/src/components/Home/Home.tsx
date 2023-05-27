@@ -55,7 +55,7 @@ export const Home = () => {
 
   const itemListPage = (
     <MerComponent>
-      <div >
+      <div className="item-parent">
         <span>
           <p>Logined User ID: {cookies.userID}</p>
         </span>
