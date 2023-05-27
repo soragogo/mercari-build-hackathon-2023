@@ -9,14 +9,19 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"strings"
 	"path/filepath"
 
+	
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/soragogo/mecari-build-hackathon-2023/backend/db"
 	"github.com/soragogo/mecari-build-hackathon-2023/backend/domain"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
+
+
+	
 )
 
 var (
@@ -220,22 +225,23 @@ func (h *Handler) AddItem(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	// 拡張子のバリデーション
-	ext := filepath.Ext(file.Filename)
-	allowedExts := []string{".jpg", ".jpeg", ".png", ".gif"}
+		// 拡張子を取得
+	ext := strings.ToLower(filepath.Ext(file.Filename))
+
+	// 許可された拡張子のリスト
+	allowedExtensions := []string{".jpg", ".jpeg", ".png", ".gif"}
+
+	// 拡張子が許可されたフォーマットでない場合はエラーとする
 	isAllowed := false
-	for _, allowedExt := range allowedExts {
+	for _, allowedExt := range allowedExtensions {
 		if ext == allowedExt {
 			isAllowed = true
 			break
 		}
 	}
+
 	if !isAllowed {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid image file format. Allowed formats: jpg, jpeg, png, gif")
-	}
-	// 価格のバリデーション
-	if req.Price < 0 {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid price value")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid file format. Only JPG, JPEG, PNG, and GIF are allowed.")
 	}
 
 	src, err := file.Open()

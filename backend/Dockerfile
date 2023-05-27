@@ -10,6 +10,7 @@ RUN addgroup -g 1001 build && adduser -D -G build -u 1001 build
 RUN chown -R build:build /app
 
 RUN go mod download
+RUN go get github.com/nfnt/resize
 RUN go build -o /app/server
 
 USER 1001
