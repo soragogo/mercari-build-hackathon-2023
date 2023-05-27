@@ -511,6 +511,11 @@ func (h *Handler) AddBalance(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
+	// バリデーション: balanceがマイナスの場合はエラーとする
+	if req.Balance < 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "Balance must be a positive value")
+	}
+
 	userID, err := getUserID(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err)
