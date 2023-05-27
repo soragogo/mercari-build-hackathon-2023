@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"path/filepath"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
@@ -219,6 +220,24 @@ func (h *Handler) AddItem(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
+	// 拡張子のバリデーション
+	ext := filepath.Ext(file.Filename)
+	allowedExts := []string{".jpg", ".jpeg", ".png", ".gif"}
+	isAllowed := false
+	for _, allowedExt := range allowedExts {
+		if ext == allowedExt {
+			isAllowed = true
+			break
+		}
+	}
+	if !isAllowed {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid image file format. Allowed formats: jpg, jpeg, png, gif")
+	}
+	// 価格のバリデーション
+	if req.Price < 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid price value")
+	}
+
 	src, err := file.Open()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
@@ -413,6 +432,11 @@ func (h *Handler) AddBalance(c echo.Context) error {
 	req := new(addBalanceRequest)
 	if err := c.Bind(req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	// バリデーション: balanceがマイナスの場合はエラーとする
+	if req.Balance < 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "Balance must be a positive value")
 	}
 
 	userID, err := getUserID(c)
