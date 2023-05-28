@@ -1,0 +1,56 @@
+.spacer {
+    margin: 10px;
+}
+
+.Listing {
+    max-width: 600px;
+    margin: 6 auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ListingForm {
+    display: flex;
+    flex-direction: column;
+}
+
+.ListingForm>div {
+    margin-bottom: 20px;
+}
+
+.MerTextInput,
+.MerButton {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.MerTextInput::placeholder {
+    color: #999;
+}
+
+.MerButton {
+    background-color: #00a1e0;
+    color: #fff;
+    cursor: pointer;
+}
+
+.MerButton:hover {
+    background-color: #0088c0;
+}
+
+@media screen and (min-width: 768px) {
+    .Listing {
+        max-width: 800px;
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .Listing {
+        max-width: 1000px;
+    }
+}

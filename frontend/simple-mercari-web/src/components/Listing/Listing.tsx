@@ -3,6 +3,7 @@ import { useCookies } from "react-cookie";
 import { MerComponent } from "../MerComponent";
 import { toast } from "react-toastify";
 import { fetcher } from "../../helper";
+import "./Listing.css"
 
 interface Category {
   id: number;
@@ -117,8 +118,9 @@ export const Listing: React.FC = () => {
   return (
     <MerComponent>
       <div className="Listing">
-        <form onSubmit={onSubmit} className="ListingForm">
-          <div>
+        <form onSubmit={onSubmit} >
+          <div className="ListingForm">
+            <span>商品説明</span>
             <input
               type="text"
               name="name"
@@ -127,6 +129,7 @@ export const Listing: React.FC = () => {
               onChange={onValueChange}
               required
             />
+            <span className="spacer"></span>
             <select
               name="category_id"
               id="MerTextInput"
@@ -138,6 +141,7 @@ export const Listing: React.FC = () => {
                   return <option value={category.id}>{category.name}</option>;
                 })}
             </select>
+            <span className="spacer"></span>
             <input
               type="number"
               name="price"
@@ -146,6 +150,7 @@ export const Listing: React.FC = () => {
               onChange={onValueChange}
               required
             />
+            <span className="spacer"></span>
             <input
               type="text"
               name="description"

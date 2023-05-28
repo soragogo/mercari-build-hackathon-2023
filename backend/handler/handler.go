@@ -218,7 +218,6 @@ func (h *Handler) Login(c echo.Context) error {
 		Token: encodedToken,
 	})
 }
-
 func (h *Handler) AddItem(c echo.Context) error {
 	// TODO: validation
 	// http.StatusBadRequest(400)
@@ -238,7 +237,7 @@ func (h *Handler) AddItem(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-		// 拡張子を取得
+	// 拡張子を取得
 	ext := strings.ToLower(filepath.Ext(file.Filename))
 
 	// 許可された拡張子のリスト
@@ -257,8 +256,6 @@ func (h *Handler) AddItem(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid file format. Only JPG, JPEG, PNG, and GIF are allowed.")
 	}
 
-	
-
 	src, err := file.Open()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
@@ -267,9 +264,11 @@ func (h *Handler) AddItem(c echo.Context) error {
 
 	var dest []byte
 	blob := bytes.NewBuffer(dest)
-	// TODO: pass very big file
-	// http.StatusBadRequest(400)
-	if _, err := io.Copy(blob, src); err != nil {
+	if _, err := io.Copy(blob, srcLimited); err != nil {
+		if err == io.EOF {
+			// リクエストサイズが制限を超えている場合のエラーハンドリング
+			return echo.NewHTTPError(http.StatusBadRequest, "Request size exceeds the limit.")
+		}
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
@@ -281,32 +280,13 @@ func (h *Handler) AddItem(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	const (
-		maxWidth  = 800
-		maxHeight = 800
-	)
-
-	// 画像のリサイズを行います
-	img, _, err := image.Decode(blob)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-
-	resizedImage := resize.Resize(maxWidth, maxHeight, img, resize.Lanczos3)
-
-	// リサイズされた画像のバイトデータを取得します
-	resizedBytes := new(bytes.Buffer)
-	if err := jpeg.Encode(resizedBytes, resizedImage, nil); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-
 	item, err := h.ItemRepo.AddItem(c.Request().Context(), domain.Item{
 		Name:        req.Name,
 		CategoryID:  req.CategoryID,
 		UserID:      userID,
 		Price:       req.Price,
 		Description: req.Description,
-		Image:       resizedBytes.Bytes(),
+		Image:       blob.Bytes(),
 		Status:      domain.ItemStatusInitial,
 	})
 	if err != nil {
@@ -627,7 +607,6 @@ func getUserID(c echo.Context) (int64, error) {
 
 func (h *Handler) SearchItems(c echo.Context) error {
 	itemName := c.QueryParam("name")
-	println("hi")
 	// 検索処理の実装
 	items, err := h.ItemRepo.SearchItems(c.Request().Context(), itemName)
 	if err != nil {

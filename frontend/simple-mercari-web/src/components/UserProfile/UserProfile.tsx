@@ -5,6 +5,7 @@ import { MerComponent } from "../MerComponent";
 import { toast } from "react-toastify";
 import { ItemList } from "../ItemList";
 import { fetcher } from "../../helper";
+import "./UserProfile.css"
 
 interface Item {
   id: number;
@@ -84,7 +85,8 @@ export const UserProfile: React.FC = () => {
         <div>
           <div>
             <h2>
-              <span>Balance: {balance}</span>
+              <span >Balance<nav></nav></span>
+              <span>￥{balance}</span>
             </h2>
             <input
               type="number"
