@@ -91,6 +91,14 @@ type addItemResponse struct {
 	ID int64 `json:"id"`
 }
 
+type addCategoryRequest struct {
+	Name string `form:"name"`
+}
+
+type addCategoryResponse struct {
+	ID int64 `json:"id"`
+}
+
 type addBalanceRequest struct {
 	Balance int64 `json:"balance"`
 }
@@ -331,6 +339,27 @@ func (h *Handler) Sell(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, "successful")
 }
+
+func (h *Handler) AddCategory(c echo.Context) error {
+
+	req := new(addCategoryRequest)
+
+	if err := c.Bind(req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	if req.Name == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "Category cannot be empty")
+	}
+
+	category, err := h.ItemRepo.AddCategory(c.Request().Context(), domain.Category{Name: req.Name})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, addCategoryResponse{ID: int64(category.ID)})
+}
+
 
 func (h *Handler) GetOnSaleItems(c echo.Context) error {
 	ctx := c.Request().Context()
