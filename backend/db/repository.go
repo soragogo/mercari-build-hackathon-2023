@@ -159,6 +159,22 @@ func (r *ItemDBRepository) UpdateItemImage(ctx context.Context, id int32, image 
 	return nil
 }
 
+func (r *ItemDBRepository) UpdateItem(ctx context.Context, item domain.Item) error {
+	_, err := r.ExecContext(ctx, "UPDATE items SET name=?, price=?, description=?, category_id=?, seller_id=?, status=? WHERE id=?", item.Name, item.Price, item.Description, item.CategoryID, item.UserID, item.Status, item.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *ItemDBRepository) UpdateItemImage(ctx context.Context, id int32, image []byte) error {
+	_, err := r.ExecContext(ctx, "UPDATE items SET image=? WHERE id=?", image, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *ItemDBRepository) GetCategory(ctx context.Context, id int64) (domain.Category, error) {
 	row := r.QueryRowContext(ctx, "SELECT * FROM category WHERE id = ?", id)
 
