@@ -143,21 +143,6 @@ func (r *ItemDBRepository) UpdateItemStatus(ctx context.Context, id int32, statu
 	return nil
 }
 
-func (r *ItemDBRepository) UpdateItem(ctx context.Context, item domain.Item) error {
-	_, err := r.ExecContext(ctx, "UPDATE items SET name=?, price=?, description=?, category_id=?, seller_id=?, status=? WHERE id=?", item.Name, item.Price, item.Description, item.CategoryID, item.UserID, item.Status, item.ID)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (r *ItemDBRepository) UpdateItemImage(ctx context.Context, id int32, image []byte) error {
-	_, err := r.ExecContext(ctx, "UPDATE items SET image=? WHERE id=?", image, id)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 func (r *ItemDBRepository) UpdateItem(ctx context.Context, item domain.Item) error {
 	_, err := r.ExecContext(ctx, "UPDATE items SET name=?, price=?, description=?, category_id=?, seller_id=?, status=? WHERE id=?", item.Name, item.Price, item.Description, item.CategoryID, item.UserID, item.Status, item.ID)
