@@ -389,43 +389,6 @@ func (h *Handler) GetItem(c echo.Context) error {
 	})
 }
 
-func (h *Handler) PutItem(c echo.Context) error {
-	ctx := c.Request().Context()
-
-	itemID, err := strconv.Atoi(c.Param("itemID"))
-	fmt.Println(ctx, itemID, err)
-	// if err != nil {
-	// 	return echo.NewHTTPError(http.StatusInternalServerError, err)
-	// }
-
-	// item, err := h.ItemRepo.GetItem(ctx, int32(itemID))
-	// // TODO: not found handling
-	// // http.StatusNotFound(404)
-	// if err != nil {
-	// 	return echo.NewHTTPError(http.StatusInternalServerError, err)
-	// }
-
-	// category, err := h.ItemRepo.GetCategory(ctx, item.CategoryID)
-	// if err != nil {
-	// 	return echo.NewHTTPError(http.StatusInternalServerError, err)
-	// // }
-	// return c.JSON(http.StatusOK, getItemResponse{
-	// 	ID:           item.ID,
-	// 	Name:         item.Name,
-	// 	CategoryID:   item.CategoryID,
-	// 	CategoryName: category.Name,
-	// 	UserID:       item.UserID,
-	// 	Price:        item.Price,
-	// 	Description:  item.Description,
-	// 	Status:       item.Status,
-	// })
-	
-
-	return c.JSON(http.StatusOK, getItemResponse{
-		ID: 123,
-	})
-}
-
 func (h *Handler) GetUserItems(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -614,39 +577,6 @@ func getUserID(c echo.Context) (int64, error) {
 
 	return claims.UserID, nil
 }
-
-func (h *Handler) SearchItems(c echo.Context) error {
-	itemName := c.QueryParam("name")
-	println("hi")
-	// 検索処理の実装
-	items, err := h.ItemRepo.SearchItems(c.Request().Context(), itemName)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-		
-	}
-
-
-	// レスポンスデータの作成
-	var searchResults []SearchResult
-	for _, item := range items {
-		searchResult := SearchResult{
-			ID:           item.ID,
-			Name:         item.Name,
-			UserID:       item.UserID,
-			Price:        item.Price,
-			Description:  item.Description,
-			Status:       item.Status,
-		}
-		searchResults = append(searchResults, searchResult)
-	}
-
-	// レスポンスの返却
-	return c.JSON(http.StatusOK, searchResults)
-}
-
-
-
-
 
 
 func getEnv(key string, defaultValue string) string {
