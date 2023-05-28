@@ -56,6 +56,9 @@ type ItemRepository interface {
 	GetCategory(ctx context.Context, id int64) (domain.Category, error)
 	GetCategories(ctx context.Context) ([]domain.Category, error)
 	UpdateItemStatus(ctx context.Context, id int32, status domain.ItemStatus) error
+	UpdateItem(ctx context.Context, item domain.Item) error
+	UpdateItemImage(ctx context.Context, id int32, image []byte) error
+	SearchItems(ctx context.Context, name string) ([]domain.Item, error)
 }
 
 type ItemDBRepository struct {
@@ -140,6 +143,22 @@ func (r *ItemDBRepository) UpdateItemStatus(ctx context.Context, id int32, statu
 	return nil
 }
 
+func (r *ItemDBRepository) UpdateItem(ctx context.Context, item domain.Item) error {
+	_, err := r.ExecContext(ctx, "UPDATE items SET name=?, price=?, description=?, category_id=?, seller_id=?, status=? WHERE id=?", item.Name, item.Price, item.Description, item.CategoryID, item.UserID, item.Status, item.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *ItemDBRepository) UpdateItemImage(ctx context.Context, id int32, image []byte) error {
+	_, err := r.ExecContext(ctx, "UPDATE items SET image=? WHERE id=?", image, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *ItemDBRepository) GetCategory(ctx context.Context, id int64) (domain.Category, error) {
 	row := r.QueryRowContext(ctx, "SELECT * FROM category WHERE id = ?", id)
 
@@ -166,4 +185,26 @@ func (r *ItemDBRepository) GetCategories(ctx context.Context) ([]domain.Category
 		return nil, err
 	}
 	return cats, nil
+}
+
+func (r *ItemDBRepository) SearchItems(ctx context.Context, name string) ([]domain.Item, error) {
+	query := "SELECT * FROM items WHERE name LIKE ?"
+	rows, err := r.QueryContext(ctx, query, "%"+name+"%")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []domain.Item
+	for rows.Next() {
+		var item domain.Item
+		if err := rows.Scan(&item.ID, &item.Name, &item.Price, &item.Description, &item.CategoryID, &item.UserID, &item.Image, &item.Status, &item.CreatedAt, &item.UpdatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

@@ -83,6 +83,7 @@ func run(ctx context.Context) int {
 	e.GET("/items/:itemID", h.GetItem)
 	e.GET("/items/:itemID/image", h.GetImage)
 	e.GET("/items/categories", h.GetCategories)
+	e.GET("/search", h.SearchItems)
 	e.POST("/register", h.Register)
 	e.POST("/login", h.Login)
 
@@ -95,6 +96,7 @@ func run(ctx context.Context) int {
 	l.POST("/purchase/:itemID", h.Purchase)
 	l.GET("/balance", h.GetBalance)
 	l.POST("/balance", h.AddBalance)
+	l.PUT("/items/:itemID", h.PutItem)
 
 	// Start server
 	go func() {
