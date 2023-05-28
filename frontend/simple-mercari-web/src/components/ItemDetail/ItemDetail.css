@@ -1,5 +1,13 @@
 .ItemDetail .item {
     /* ItemDetail全体のスタイル */
+    width: 100%;
+
+}
+
+.ItemDetail .item-details {
+    width: 100%;
+
+
 }
 
 .ItemDetail .item-image {
@@ -7,6 +15,7 @@
     width: 100%;
     display: flex;
     justify-content: center;
+
 
 
 }
@@ -20,6 +29,8 @@
     /* Item Nameのスタイル */
     font-size: 50px;
     font-weight: bold;
+    width: 100%;
+
 
 }
 
@@ -175,4 +186,8 @@
 
 .PriceandPurchase .price .currency-mark {
     font-size: 0.5em;
+}
+
+.spacer {
+    margin-bottom: 1000px;
 }
