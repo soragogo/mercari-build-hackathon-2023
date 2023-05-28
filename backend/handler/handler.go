@@ -9,6 +9,8 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"strings"
+	"path/filepath"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
@@ -16,6 +18,9 @@ import (
 	"github.com/soragogo/mecari-build-hackathon-2023/backend/domain"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
+
+
+	
 )
 
 var (
@@ -105,12 +110,23 @@ type loginResponse struct {
 	Token string `json:"token"`
 }
 
+
 type putItemRequest struct {
 	ItemID      int32  `json:"item_id"`
 	Name        string `json:"name"`
 	CategoryID  int64  `json:"category_id"`
 	Price       int64  `json:"price"`
 	Description string `json:"description"`
+}
+
+
+type SearchResult struct {
+	ID          int32             `json:"id"`
+	Name        string            `json:"name"`
+	UserID      int64             `json:"user_id"`
+	Price       int64             `json:"price"`
+	Description string            `json:"description"`
+	Status      domain.ItemStatus `json:"status"`
 }
 
 type Handler struct {
@@ -227,17 +243,42 @@ func (h *Handler) AddItem(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
+	// 拡張子を取得
+	ext := strings.ToLower(filepath.Ext(file.Filename))
+
+	// 許可された拡張子のリスト
+	allowedExtensions := []string{".jpg", ".jpeg", ".png", ".gif"}
+
+	// 拡張子が許可されたフォーマットでない場合はエラーとする
+	isAllowed := false
+	for _, allowedExt := range allowedExtensions {
+		if ext == allowedExt {
+			isAllowed = true
+			break
+		}
+	}
+
+	if !isAllowed {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid file format. Only JPG, JPEG, PNG, and GIF are allowed.")
+	}
+
 	src, err := file.Open()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	defer src.Close()
 
+	// TODO: リクエストの最大サイズを制限する（例: 10MB）
+	maxRequestSize := int64(10 * 1024 * 1024) // 10MB
+	srcLimited := io.LimitReader(src, maxRequestSize)
+
 	var dest []byte
 	blob := bytes.NewBuffer(dest)
-	// TODO: pass very big file
-	// http.StatusBadRequest(400)
-	if _, err := io.Copy(blob, src); err != nil {
+	if _, err := io.Copy(blob, srcLimited); err != nil {
+		if err == io.EOF {
+			// リクエストサイズが制限を超えている場合のエラーハンドリング
+			return echo.NewHTTPError(http.StatusBadRequest, "Request size exceeds the limit.")
+		}
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
@@ -348,6 +389,43 @@ func (h *Handler) GetItem(c echo.Context) error {
 	})
 }
 
+func (h *Handler) PutItem(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	itemID, err := strconv.Atoi(c.Param("itemID"))
+	fmt.Println(ctx, itemID, err)
+	// if err != nil {
+	// 	return echo.NewHTTPError(http.StatusInternalServerError, err)
+	// }
+
+	// item, err := h.ItemRepo.GetItem(ctx, int32(itemID))
+	// // TODO: not found handling
+	// // http.StatusNotFound(404)
+	// if err != nil {
+	// 	return echo.NewHTTPError(http.StatusInternalServerError, err)
+	// }
+
+	// category, err := h.ItemRepo.GetCategory(ctx, item.CategoryID)
+	// if err != nil {
+	// 	return echo.NewHTTPError(http.StatusInternalServerError, err)
+	// // }
+	// return c.JSON(http.StatusOK, getItemResponse{
+	// 	ID:           item.ID,
+	// 	Name:         item.Name,
+	// 	CategoryID:   item.CategoryID,
+	// 	CategoryName: category.Name,
+	// 	UserID:       item.UserID,
+	// 	Price:        item.Price,
+	// 	Description:  item.Description,
+	// 	Status:       item.Status,
+	// })
+	
+
+	return c.JSON(http.StatusOK, getItemResponse{
+		ID: 123,
+	})
+}
+
 func (h *Handler) GetUserItems(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -421,6 +499,11 @@ func (h *Handler) AddBalance(c echo.Context) error {
 	req := new(addBalanceRequest)
 	if err := c.Bind(req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	// バリデーション: balanceがマイナスの場合はエラーとする
+	if req.Balance < 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "Balance must be a positive value")
 	}
 
 	userID, err := getUserID(c)
@@ -531,6 +614,40 @@ func getUserID(c echo.Context) (int64, error) {
 
 	return claims.UserID, nil
 }
+
+func (h *Handler) SearchItems(c echo.Context) error {
+	itemName := c.QueryParam("name")
+	println("hi")
+	// 検索処理の実装
+	items, err := h.ItemRepo.SearchItems(c.Request().Context(), itemName)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		
+	}
+
+
+	// レスポンスデータの作成
+	var searchResults []SearchResult
+	for _, item := range items {
+		searchResult := SearchResult{
+			ID:           item.ID,
+			Name:         item.Name,
+			UserID:       item.UserID,
+			Price:        item.Price,
+			Description:  item.Description,
+			Status:       item.Status,
+		}
+		searchResults = append(searchResults, searchResult)
+	}
+
+	// レスポンスの返却
+	return c.JSON(http.StatusOK, searchResults)
+}
+
+
+
+
+
 
 func getEnv(key string, defaultValue string) string {
 	value := os.Getenv(key)
