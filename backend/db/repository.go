@@ -3,9 +3,13 @@ package db
 import (
 	"context"
 	"database/sql"
+	"net/http"
+	"strings"
 
+	"github.com/labstack/echo/v4"
 	"github.com/soragogo/mecari-build-hackathon-2023/backend/domain"
 )
+
 
 type UserRepository interface {
 	AddUser(ctx context.Context, user domain.User) (int64, error)
@@ -72,15 +76,18 @@ func NewItemRepository(db *sql.DB) ItemRepository {
 
 func (r *ItemDBRepository) AddItem(ctx context.Context, item domain.Item) (domain.Item, error) {
 	if _, err := r.ExecContext(ctx, "INSERT INTO items (name, price, description, category_id, seller_id, image, status) VALUES (?, ?, ?, ?, ?, ?, ?)", item.Name, item.Price, item.Description, item.CategoryID, item.UserID, item.Image, item.Status); err != nil {
+		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
+			return domain.Item{}, echo.NewHTTPError(http.StatusConflict, "Item with the same ID already exists")
+		}
 		return domain.Item{}, err
 	}
 	// TODO: if other insert query is executed at the same time, it might return wrong id
-	// http.StatusConflict(409) 既に同じIDがあった場合
 	row := r.QueryRowContext(ctx, "SELECT * FROM items WHERE rowid = LAST_INSERT_ROWID()")
 
 	var res domain.Item
 	return res, row.Scan(&res.ID, &res.Name, &res.Price, &res.Description, &res.CategoryID, &res.UserID, &res.Image, &res.Status, &res.CreatedAt, &res.UpdatedAt)
 }
+
 
 func (r *ItemDBRepository) AddCategory(ctx context.Context, categoryName domain.Category) (domain.Category, error) {
 	// Insert the new category into the database
