@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/soragogo/mecari-build-hackathon-2023/backend/domain"
 )
@@ -172,7 +171,6 @@ func (r *ItemDBRepository) GetCategories(ctx context.Context) ([]domain.Category
 
 func (r *ItemDBRepository) SearchItems(ctx context.Context, name string) ([]domain.Item, error) {
 	query := "SELECT * FROM items WHERE name LIKE ?"
-	fmt.Println(query)
 	rows, err := r.QueryContext(ctx, query, "%"+name+"%")
 	if err != nil {
 		return nil, err
