@@ -11,10 +11,7 @@ import (
 	"time"
 	"strings"
 	"path/filepath"
-	"image"
-	"image/jpeg"
 
-	"github.com/nfnt/resize"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/soragogo/mecari-build-hackathon-2023/backend/db"
@@ -238,7 +235,7 @@ func (h *Handler) AddItem(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-		// 拡張子を取得
+	// 拡張子を取得
 	ext := strings.ToLower(filepath.Ext(file.Filename))
 
 	// 許可された拡張子のリスト
@@ -257,19 +254,23 @@ func (h *Handler) AddItem(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid file format. Only JPG, JPEG, PNG, and GIF are allowed.")
 	}
 
-	
-
 	src, err := file.Open()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	defer src.Close()
 
+	// TODO: リクエストの最大サイズを制限する（例: 10MB）
+	maxRequestSize := int64(10 * 1024 * 1024) // 10MB
+	srcLimited := io.LimitReader(src, maxRequestSize)
+
 	var dest []byte
 	blob := bytes.NewBuffer(dest)
-	// TODO: pass very big file
-	// http.StatusBadRequest(400)
-	if _, err := io.Copy(blob, src); err != nil {
+	if _, err := io.Copy(blob, srcLimited); err != nil {
+		if err == io.EOF {
+			// リクエストサイズが制限を超えている場合のエラーハンドリング
+			return echo.NewHTTPError(http.StatusBadRequest, "Request size exceeds the limit.")
+		}
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
@@ -281,32 +282,13 @@ func (h *Handler) AddItem(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	const (
-		maxWidth  = 800
-		maxHeight = 800
-	)
-
-	// 画像のリサイズを行います
-	img, _, err := image.Decode(blob)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-
-	resizedImage := resize.Resize(maxWidth, maxHeight, img, resize.Lanczos3)
-
-	// リサイズされた画像のバイトデータを取得します
-	resizedBytes := new(bytes.Buffer)
-	if err := jpeg.Encode(resizedBytes, resizedImage, nil); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-
 	item, err := h.ItemRepo.AddItem(c.Request().Context(), domain.Item{
 		Name:        req.Name,
 		CategoryID:  req.CategoryID,
 		UserID:      userID,
 		Price:       req.Price,
 		Description: req.Description,
-		Image:       resizedBytes.Bytes(),
+		Image:       blob.Bytes(),
 		Status:      domain.ItemStatusInitial,
 	})
 	if err != nil {
