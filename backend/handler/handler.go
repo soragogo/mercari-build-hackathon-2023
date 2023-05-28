@@ -105,6 +105,14 @@ type loginResponse struct {
 	Token string `json:"token"`
 }
 
+type putItemRequest struct {
+	ItemID      int32  `json:"item_id"`
+	Name        string `json:"name"`
+	CategoryID  int64  `json:"category_id"`
+	Price       int64  `json:"price"`
+	Description string `json:"description"`
+}
+
 type Handler struct {
 	DB       *sql.DB
 	UserRepo db.UserRepository
@@ -530,4 +538,72 @@ func getEnv(key string, defaultValue string) string {
 		return defaultValue
 	}
 	return value
+}
+
+func (h *Handler) PutItem(c echo.Context) error {
+    ctx := c.Request().Context()
+
+    req := new(putItemRequest)
+    if err := c.Bind(req); err != nil {
+        return echo.NewHTTPError(http.StatusBadRequest, err)
+    }
+
+    userID, err := getUserID(c)
+    if err != nil {
+        return echo.NewHTTPError(http.StatusUnauthorized, err)
+    }
+
+    item, err := h.ItemRepo.GetItem(ctx, req.ItemID)
+    if err != nil {
+        // TODO: Not found handling
+        return echo.NewHTTPError(http.StatusNotFound, err)
+    }
+
+    if item.UserID != userID {
+        // TODO: Check req.UserID and item.UserID
+        return echo.NewHTTPError(http.StatusPreconditionFailed, "user ID mismatch")
+    }
+
+    // TODO: Only update when status is initial
+    if item.Status != domain.ItemStatusInitial {
+        return echo.NewHTTPError(http.StatusPreconditionFailed, "item status is not initial")
+    }
+
+    updatedItem := domain.Item{
+        ID:          item.ID,
+        Name:        req.Name,
+        CategoryID:  req.CategoryID,
+        UserID:      userID,
+        Price:       req.Price,
+        Description: req.Description,
+        Image:       item.Image, // Preserve existing image
+        Status:      item.Status, // Preserve existing status
+    }
+
+    if err := h.ItemRepo.UpdateItem(ctx, updatedItem); err != nil {
+        return echo.NewHTTPError(http.StatusInternalServerError, err)
+    }
+
+    if file, err := c.FormFile("image"); err == nil {
+        src, err := file.Open()
+        if err != nil {
+            return echo.NewHTTPError(http.StatusInternalServerError, err)
+        }
+        defer src.Close()
+
+        var dest []byte
+        blob := bytes.NewBuffer(dest)
+        if _, err := io.Copy(blob, src); err != nil {
+            return echo.NewHTTPError(http.StatusInternalServerError, err)
+        }
+
+        // Update the item's image
+        updatedItem.Image = blob.Bytes()
+
+        if err := h.ItemRepo.UpdateItemImage(ctx, updatedItem.ID, updatedItem.Image); err != nil {
+            return echo.NewHTTPError(http.StatusInternalServerError, err)
+        }
+    }
+
+    return c.JSON(http.StatusOK, "successful")
 }
