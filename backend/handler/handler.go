@@ -686,7 +686,7 @@ func (h *Handler) PutItem(c echo.Context) error {
 
 func (h *Handler) SearchItems(c echo.Context) error {
 	itemName := c.QueryParam("name")
-	println("hi")
+
 	// 検索処理の実装
 	items, err := h.ItemRepo.SearchItems(c.Request().Context(), itemName)
 	if err != nil {
@@ -711,4 +711,14 @@ func (h *Handler) SearchItems(c echo.Context) error {
 
 	// レスポンスの返却
 	return c.JSON(http.StatusOK, searchResults)
+}
+
+func (h *Handler) AddLike(c echo.Context) error {
+    // TODO: Implement AddLike handler logic
+    return nil
+}
+
+func (h *Handler) GetLikes(c echo.Context) error {
+    // TODO: Implement GetLikes handler logic
+    return nil
 }
