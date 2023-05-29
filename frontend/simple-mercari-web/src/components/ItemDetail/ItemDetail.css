@@ -110,7 +110,7 @@
     transform: translateY(50%);
     right: 10%;
     /* 他のスタイルプロパティ */
-    background-color: #da3e50;
+    background-color: rgb(69, 124, 69);
     color: white;
     font: inherit;
     transition-timing-function: ease-in-out;
@@ -178,7 +178,7 @@
 
 .PriceandPurchase .price {
     /* 価格のスタイル */
-    color: red;
+    color: rgb(69, 124, 69);
     font-size: 40px;
     margin-right: 80%;
     /* 価格とボタンの間の余白を設定 */

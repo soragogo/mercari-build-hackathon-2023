@@ -42,8 +42,8 @@ body {
 
 #MerButton {
   /* color: var(--alias-color-text-inverse-default); */
-  background-color: #da3e50;
-  color: #222427;
+  background-color: rgb(69, 124, 69);
+  color: white;
   font: inherit;
   transition-timing-function: ease-in-out;
   transition-duration: 0.1s;
